@@ -12,3 +12,7 @@ readme = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[profile.release]
+lto = true
+codegen-units = 1
