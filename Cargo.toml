@@ -1,0 +1,14 @@
+[package]
+name = "disjoint_set_bench"
+version = "0.1.0"
+authors = ["Jonathan Gruner <jogru0@gmail.com>"]
+edition = "2021"
+rust-version = "1.56"
+description = "Benchmarks for different disjoint set data structure implementations"
+repository = "https://github.com/jogru0/disjoint_set_bench"
+publish = false
+readme = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
