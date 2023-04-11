@@ -34,36 +34,6 @@ pub struct DisjointSet {
 }
 
 impl DisjointSet {
-    //Returns a current root, and the same root if i and j are in the same set, or an element of the other set otherwise.
-    //Along the way, splits the path.
-    fn diff(&self, mut i: usize, mut j: usize) -> (usize, usize) {
-        let mut pi = self.nodes[i].get_parent();
-        let mut pj = self.nodes[j].get_parent();
-        loop {
-            match pi.cmp(&pj) {
-                Ordering::Equal => return (pi, pj),
-                Ordering::Less => {
-                    if i == pi {
-                        return (pi, pj);
-                    }
-                    let gpi = self.nodes[pi].get_parent();
-                    self.nodes[i].set_parent(gpi);
-                    i = pi;
-                    pi = gpi;
-                }
-                Ordering::Greater => {
-                    if j == pj {
-                        return (pj, pi);
-                    }
-                    let gpj = self.nodes[pj].get_parent();
-                    self.nodes[j].set_parent(gpj);
-                    j = pj;
-                    pj = gpj;
-                }
-            }
-        }
-    }
-
     //Traditional root_of with path splitting.
     fn root_of(&self, mut child: usize) -> usize {
         let mut parent = self.nodes[child].get_parent();
@@ -94,17 +64,33 @@ impl DisjointSet {
 
     //If i and j belong to different subsets, joins these two subsets, return true.
     //Otherwise, returns false.
-    //Internally, appends the rankwise smallest to the rankwise biggest tree.
-    pub fn join(&mut self, i: usize, j: usize) -> bool {
-        let (root, new_parent_or_same) = self.diff(i, j);
-
-        if root == new_parent_or_same {
-            return false;
+    //Internally, uses splicing
+    pub fn join(&mut self, mut i: usize, mut j: usize) -> bool {
+        let mut pi = self.nodes[i].get_parent();
+        let mut pj = self.nodes[j].get_parent();
+        loop {
+            match pi.cmp(&pj) {
+                Ordering::Equal => return false,
+                Ordering::Less => {
+                    if i == pi {
+                        self.nodes[i].set_parent(pj);
+                        return true;
+                    }
+                    self.nodes[i].set_parent(pj);
+                    i = pi;
+                    pi = self.nodes[i].get_parent();
+                }
+                Ordering::Greater => {
+                    if j == pj {
+                        self.nodes[j].set_parent(pi);
+                        return true;
+                    }
+                    self.nodes[j].set_parent(pi);
+                    j = pj;
+                    pj = self.nodes[j].get_parent();
+                }
+            }
         }
-
-        self.nodes[root].set_parent(new_parent_or_same);
-
-        true
     }
 
     pub fn are_in_same_set(&self, i: usize, j: usize) -> bool {

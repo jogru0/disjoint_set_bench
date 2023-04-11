@@ -1,81 +1,53 @@
-use std::cmp::Ordering;
+use std::{cell::Cell, cmp::Ordering};
 
-use self::node::Node;
-
-mod node {
-    use std::cell::Cell;
-
-    #[derive(Clone)]
-    pub(crate) struct Node {
-        //If root:
-        //	-length of the longest branch that would be there
-        //	if we would not continually flatten the tree.
-        //Otherwise: id of parent.
-        parent_or_neg_rank: Cell<isize>,
-    }
-
-    impl Node {
-        pub(crate) fn new() -> Self {
-            Self {
-                parent_or_neg_rank: Cell::new(-1),
-            }
-        }
-
-        // fn is_root(&self) -> bool {
-        //     self.parent_or_neg_rank.get().is_negative()
-        // }
-
-        pub(crate) fn get_rank(&self) -> usize {
-            // assert!(self.is_root());
-            -self.parent_or_neg_rank.get() as usize
-        }
-
-        pub(crate) fn get_parent(&self) -> Option<usize> {
-            let result = self.parent_or_neg_rank.get();
-            if result.is_negative() {
-                None
-            } else {
-                Some(result as usize)
-            }
-        }
-
-        pub(crate) fn set_parent(&self, new: usize) {
-            self.parent_or_neg_rank.set(new as isize);
-        }
-
-        pub(crate) fn increment_rank(&mut self) {
-            // assert!(self.is_root());
-            *self.parent_or_neg_rank.get_mut() -= 1;
-        }
-    }
-}
 pub struct DisjointSet {
     //Mutable because some functions update the internal structure,
     //but do not modify the represented subsets.
-    nodes: Vec<Node>,
+    parents: Vec<Cell<usize>>,
+    ranks: Vec<u8>,
 }
 
 impl DisjointSet {
+    #[inline(always)]
+    fn get_parent(&self, id: usize) -> usize {
+        self.parents[id].get()
+    }
+
+    #[inline(always)]
+    fn set_parent(&self, id: usize, new: usize) {
+        self.parents[id].set(new);
+    }
+
+    #[inline(always)]
+    fn get_mut_rank(&mut self, id: usize) -> &mut u8 {
+        &mut self.ranks[id]
+    }
+
     //Returns the root of the subset containing i.
     //Along the way, splits the path.
     fn root_of(&self, mut child: usize) -> usize {
-        if let Some(mut parent) = self.nodes[child].get_parent() {
-            while let Some(grandparent) = self.nodes[parent].get_parent() {
-                self.nodes[child].set_parent(grandparent);
-                child = parent;
-                parent = grandparent;
+        let mut parent = self.get_parent(child);
+        if child == parent {
+            return child;
+        };
+
+        loop {
+            let grandparent = self.get_parent(parent);
+            if parent == grandparent {
+                return parent;
             }
 
-            parent
-        } else {
-            child
+            self.set_parent(child, grandparent);
+            child = parent;
+            parent = grandparent;
         }
     }
 
     //Initializes the discrete set with given size.
     pub fn new(size: usize) -> Self {
         Self {
-            nodes: vec![Node::new(); size],
+            parents: (0..size).map(Cell::new).collect(),
+            ranks: vec![0; size],
         }
     }
 
@@ -84,9 +56,7 @@ impl DisjointSet {
     //Internally, appends the rankwise smallest to the rankwise biggest tree.
     pub fn join(&mut self, i: usize, j: usize) -> bool {
         //Immediate parent check.
-        let pi = self.nodes[i].get_parent().unwrap_or(i);
-        let pj = self.nodes[j].get_parent().unwrap_or(j);
-        if pi == pj {
+        if self.get_parent(i) == self.get_parent(j) {
             return false;
         }
 
@@ -97,20 +67,21 @@ impl DisjointSet {
             return false;
         }
 
-        let j_cmp_i = self.nodes[root_of_j]
-            .get_rank()
-            .cmp(&self.nodes[root_of_i].get_rank());
+        let rank_j = *self.get_mut_rank(root_of_j);
+        let rank_i = self.get_mut_rank(root_of_i);
+
+        let j_cmp_i = rank_j.cmp(rank_i);
 
         if j_cmp_i == Ordering::Greater {
             //root_of_j is the new root.
 
-            self.nodes[root_of_i].set_parent(root_of_j);
+            self.set_parent(root_of_i, root_of_j);
         } else {
             //root_of_i is the new root.
             if j_cmp_i == Ordering::Equal {
-                self.nodes[root_of_i].increment_rank();
+                *rank_i += 1;
             }
-            self.nodes[root_of_j].set_parent(root_of_i);
+            self.set_parent(root_of_j, root_of_i);
         }
 
         true

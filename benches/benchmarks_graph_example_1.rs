@@ -9,7 +9,7 @@ mod tests {
         run_link_by_rank_path_halving_no_quick_union, run_link_by_rank_path_splitting,
         run_link_by_rank_path_splitting_no_quick_union, run_original_port,
         run_original_port_no_quick_union, run_rem_path_splitting,
-        run_rem_path_splitting_no_quick_union,
+        run_rem_path_splitting_no_quick_union, run_rem_splicing, run_rem_splicing_no_quick_union,
     };
     use test::{black_box, Bencher};
 
@@ -22,6 +22,7 @@ mod tests {
     }
 
     #[bench]
+    #[ignore]
     fn bench_original_port(b: &mut Bencher) {
         let (size, edges) = graph_example_1();
 
@@ -37,6 +38,7 @@ mod tests {
     }
 
     #[bench]
+    #[ignore]
     fn bench_link_by_rank_path_halving(b: &mut Bencher) {
         let (size, edges) = graph_example_1();
 
@@ -44,6 +46,7 @@ mod tests {
     }
 
     #[bench]
+    #[ignore]
     fn bench_link_by_rank_path_halving_no_quick_union(b: &mut Bencher) {
         let (size, edges) = graph_example_1();
 
@@ -78,5 +81,19 @@ mod tests {
         let (size, edges) = graph_example_1();
 
         b.iter(|| run_rem_path_splitting_no_quick_union(black_box(size), black_box(&edges)));
+    }
+
+    #[bench]
+    fn bench_rem_splicing(b: &mut Bencher) {
+        let (size, edges) = graph_example_1();
+
+        b.iter(|| run_rem_splicing(black_box(size), black_box(&edges)));
+    }
+
+    #[bench]
+    fn bench_rem_splicing_no_quick_union(b: &mut Bencher) {
+        let (size, edges) = graph_example_1();
+
+        b.iter(|| run_rem_splicing_no_quick_union(black_box(size), black_box(&edges)));
     }
 }

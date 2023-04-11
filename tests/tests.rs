@@ -5,7 +5,7 @@ mod tests {
         run_link_by_rank_path_halving, run_link_by_rank_path_halving_no_quick_union,
         run_link_by_rank_path_splitting, run_link_by_rank_path_splitting_no_quick_union,
         run_original_port, run_original_port_no_quick_union, run_rem_path_splitting,
-        run_rem_path_splitting_no_quick_union,
+        run_rem_path_splitting_no_quick_union, run_rem_splicing, run_rem_splicing_no_quick_union,
     };
 
     #[test]
@@ -28,6 +28,8 @@ mod tests {
         let result_rem_path_splitting = run_rem_path_splitting(size, &edges);
         let result_rem_path_splitting_no_quick_union =
             run_rem_path_splitting_no_quick_union(size, &edges);
+        let result_rem_splicing = run_rem_splicing(size, &edges);
+        let result_rem_splicing_no_quick_union = run_rem_splicing_no_quick_union(size, &edges);
 
         assert_eq!(result_extern_implementation_partitions.len(), 999_999);
         assert_eq!(
@@ -61,6 +63,11 @@ mod tests {
         assert_eq!(
             result_extern_implementation_partitions,
             result_rem_path_splitting_no_quick_union
+        );
+        assert_eq!(result_extern_implementation_partitions, result_rem_splicing);
+        assert_eq!(
+            result_extern_implementation_partitions,
+            result_rem_splicing_no_quick_union
         );
     }
 
@@ -84,6 +91,8 @@ mod tests {
         let result_rem_path_splitting = run_rem_path_splitting(size, &edges);
         let result_rem_path_splitting_no_quick_union =
             run_rem_path_splitting_no_quick_union(size, &edges);
+        let result_rem_splicing = run_rem_splicing(size, &edges);
+        let result_rem_splicing_no_quick_union = run_rem_splicing_no_quick_union(size, &edges);
 
         assert_eq!(result_extern_implementation_partitions.len(), 999_999);
         assert_eq!(
@@ -117,6 +126,11 @@ mod tests {
         assert_eq!(
             result_extern_implementation_partitions,
             result_rem_path_splitting_no_quick_union
+        );
+        assert_eq!(result_extern_implementation_partitions, result_rem_splicing);
+        assert_eq!(
+            result_extern_implementation_partitions,
+            result_rem_splicing_no_quick_union
         );
     }
 }

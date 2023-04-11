@@ -2,10 +2,15 @@ pub mod link_by_rank_path_halving;
 pub mod link_by_rank_path_splitting;
 pub mod original_port;
 pub mod rem_path_splitting;
+pub mod rem_splicing;
 
 pub mod test_utility {
+    use rand::{seq::SliceRandom, SeedableRng};
+    use rand_chacha::ChaChaRng;
+
     use crate::{
         link_by_rank_path_halving, link_by_rank_path_splitting, original_port, rem_path_splitting,
+        rem_splicing,
     };
 
     pub fn graph_example_1() -> (usize, Vec<(usize, usize)>) {
@@ -18,6 +23,10 @@ pub mod test_utility {
                 j += i + 99;
             }
         }
+
+        let seed = [0; 32];
+        let mut rng = ChaChaRng::from_seed(seed);
+        edges.shuffle(&mut rng);
 
         (size, edges)
     }
@@ -153,6 +162,34 @@ pub mod test_utility {
     ) -> Vec<&(usize, usize)> {
         let mut result = Vec::new();
         let mut disjoint_set = rem_path_splitting::DisjointSet::new(size);
+        for edge in edges {
+            if !disjoint_set.are_in_same_set(edge.0, edge.1) {
+                disjoint_set.join(edge.0, edge.1);
+                result.push(edge);
+            }
+        }
+
+        result
+    }
+
+    pub fn run_rem_splicing(size: usize, edges: &[(usize, usize)]) -> Vec<&(usize, usize)> {
+        let mut result = Vec::new();
+        let mut disjoint_set = rem_splicing::DisjointSet::new(size);
+        for edge in edges {
+            if disjoint_set.join(edge.0, edge.1) {
+                result.push(edge);
+            }
+        }
+
+        result
+    }
+
+    pub fn run_rem_splicing_no_quick_union(
+        size: usize,
+        edges: &[(usize, usize)],
+    ) -> Vec<&(usize, usize)> {
+        let mut result = Vec::new();
+        let mut disjoint_set = rem_splicing::DisjointSet::new(size);
         for edge in edges {
             if !disjoint_set.are_in_same_set(edge.0, edge.1) {
                 disjoint_set.join(edge.0, edge.1);
