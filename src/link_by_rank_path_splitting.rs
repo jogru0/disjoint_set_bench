@@ -57,17 +57,19 @@ pub struct DisjointSet {
 
 impl DisjointSet {
     //Returns the root of the subset containing i.
-    //Along the way, halves the path.
-    fn root_of(&self, mut i: usize) -> usize {
-        while let Some(parent) = self.nodes[i].get_parent() {
-            if let Some(grandparent) = self.nodes[parent].get_parent() {
-                self.nodes[i].set_parent(grandparent);
-                i = grandparent;
-            } else {
-                return parent;
+    //Along the way, splits the path.
+    fn root_of(&self, mut child: usize) -> usize {
+        if let Some(mut parent) = self.nodes[child].get_parent() {
+            while let Some(grandparent) = self.nodes[parent].get_parent() {
+                self.nodes[child].set_parent(grandparent);
+                child = parent;
+                parent = grandparent;
             }
+
+            parent
+        } else {
+            child
         }
-        i
     }
 
     //Initializes the discrete set with given size.
